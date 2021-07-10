@@ -51,12 +51,17 @@
         <router-view />
       </v-container>
     </v-main>
+
+    <player ref="$player"></player>
   </v-app>
 </template>
 
 <script>
+import Player from "@/components/Player";
+
 export default {
   name: "App",
+  components: { Player },
 
   data: () => ({
     drawer: false,
