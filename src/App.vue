@@ -52,7 +52,10 @@
       </v-container>
     </v-main>
 
-    <player ref="$player"></player>
+    <player
+      ref="$player"
+      style="position: sticky; bottom: 0; width: 100%"
+    ></player>
   </v-app>
 </template>
 
@@ -73,4 +76,6 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+@import "@/assets/scss/global.scss";
+</style>
