@@ -42,8 +42,8 @@
                 ></div>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title class="sliding-text">
-                  {{ nowPlaying.song.name }}
+                <v-list-item-title>
+                  <p class="sliding-text">{{ nowPlaying.song.name }}</p>
                 </v-list-item-title>
                 <v-list-item-subtitle
                   v-if="nowPlaying.song.artists.length > 0"
@@ -87,7 +87,27 @@
               </v-container>
             </v-list-item>
           </v-col>
-          <v-col xs="12" sm="12" md="12" lg="4" xl="4" cols="12"></v-col>
+          <v-col xs="12" sm="12" md="12" lg="4" xl="4" cols="12" class="d-flex">
+            <v-list-item class="ma-auto">
+              <v-container class="d-flex ma-auto" fluid>
+                <v-row class="ma-auto">
+                  <v-col class="d-flex" cols="12">
+                    <v-slider
+                      class="ma-auto"
+                      v-model="nowPlaying.volume"
+                      max="100"
+                      min="0"
+                      @input="changeSongVolume"
+                    >
+                      <template #label>
+                        <v-icon>mdi-volume-high</v-icon>
+                      </template>
+                    </v-slider>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-list-item>
+          </v-col>
         </v-row>
       </v-container>
     </v-list>
@@ -108,6 +128,7 @@ export default {
       clicked: false,
 
       nowPlaying: {
+        volume: 1,
         timestamp: 0,
         actualTime: 0,
         song: {
@@ -195,9 +216,15 @@ export default {
       return [];
     },
 
-    // Methods for player
     secondsToHours(timestamp = 0) {
       return DateTime.fromSeconds(timestamp).toFormat("mm:ss");
+    },
+
+    // Methods for player
+    changeSongVolume() {
+      this.$nextTick(() => {
+        this.$refs.audioPlayer.volume = this.nowPlaying.volume / 100;
+      });
     },
 
     changeTimestamp() {
@@ -220,18 +247,26 @@ export default {
 
 <style lang="scss" scoped>
 .sliding-text {
-  overflow: auto;
   display: block;
 
+  transform: none;
+
+  animation: moveSlideshow 15s linear infinite both running;
+
+  cursor: pointer;
+
   @keyframes moveSlideshow {
+    0% {
+      transform: translateX(100%);
+    }
     100% {
-      transform: translateX(-100%);
+      transform: translateX(-150%);
     }
   }
-  @keyframes hovered {
-    100% {
-      transform: translateY(-30px);
-    }
+
+  &:hover {
+    animation-play-state: paused;
+    transform: none;
   }
 }
 </style>
