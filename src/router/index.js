@@ -4,6 +4,7 @@ import SettingsRoutes from "./settings";
 import PlaylistsRoutes from "./playlists";
 
 import Home from "../views/Home.vue";
+import Search from "../views/Search.vue";
 
 Vue.use(VueRouter);
 
@@ -12,6 +13,11 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home,
+  },
+  {
+    path: "/search",
+    name: "Find songs",
+    component: Search,
   },
   ...SettingsRoutes,
   ...PlaylistsRoutes,

@@ -5,8 +5,16 @@ import VuexPersistence from "vuex-persist";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: {},
-  mutations: {},
+  state: {
+    lastPlayedSongs: null,
+    playingQueue: [],
+    nowPlaying: null,
+  },
+  mutations: {
+    setNowPlaying(state, payload) {
+      state.nowPlaying = payload;
+    },
+  },
   actions: {},
   modules: {},
   plugins: [

@@ -43,14 +43,11 @@
               </v-list-item-avatar>
               <v-list-item-content>
                 <v-list-item-title>
-                  <p class="sliding-text">{{ nowPlaying.song.name }}</p>
+                  <p>{{ nowPlaying.song.name }}</p>
                 </v-list-item-title>
-                <v-list-item-subtitle
-                  v-if="nowPlaying.song.artists.length > 0"
-                  class="sliding-text"
-                >
-                  <span v-for="(artist, o) in nowPlaying.song.artists" :key="o">
-                    {{ artist }}
+                <v-list-item-subtitle v-if="nowPlaying.song.artists.length > 0">
+                  <span>
+                    {{ nowPlaying.song.artists }}
                   </span>
                 </v-list-item-subtitle>
               </v-list-item-content>
@@ -89,23 +86,21 @@
           </v-col>
           <v-col xs="12" sm="12" md="12" lg="4" xl="4" cols="12" class="d-flex">
             <v-list-item class="ma-auto">
-              <v-container class="d-flex ma-auto" fluid>
-                <v-row class="ma-auto">
-                  <v-col class="d-flex" cols="12">
-                    <v-slider
-                      class="ma-auto"
-                      v-model="nowPlaying.volume"
-                      max="100"
-                      min="0"
-                      @input="changeSongVolume"
-                    >
-                      <template #label>
-                        <v-icon>mdi-volume-high</v-icon>
-                      </template>
-                    </v-slider>
-                  </v-col>
-                </v-row>
-              </v-container>
+              <v-btn class="mr-5" text fab x-small @click="muted = !muted">
+                <v-icon>
+                  {{ muted ? "mdi-volume-mute" : "mdi-volume-high" }}
+                </v-icon>
+              </v-btn>
+              <input
+                type="range"
+                class="slider"
+                v-model="nowPlaying.volume"
+                @input="changeSongVolume"
+                max="100"
+                maxlength="100"
+                min="0"
+                minlength="0"
+              />
             </v-list-item>
           </v-col>
         </v-row>
@@ -126,14 +121,15 @@ export default {
       playing: false,
       loading: false,
       clicked: false,
+      muted: false,
 
       nowPlaying: {
-        volume: 1,
+        volume: 100,
         timestamp: 0,
         actualTime: 0,
         song: {
           name: "",
-          artists: [],
+          artists: "",
           src: "",
           cover_src: "",
         },
@@ -147,11 +143,17 @@ export default {
     });
   },
 
-  // watch: {
-  //   clicked(st) {
-  //     console.log(st);
-  //   },
-  // },
+  watch: {
+    muted(state) {
+      this.$nextTick(() => {
+        this.$refs.audioPlayer.muted = state;
+
+        if (!state && this.nowPlaying.volume <= 0) {
+          this.nowPlaying.volume = 1;
+        }
+      });
+    },
+  },
 
   methods: {
     changeStatus() {
@@ -178,23 +180,20 @@ export default {
 
       axios
         .post("http://localhost:9090/get-song", {
-          url: "https://www.youtube.com/watch?v=szj59j0hz_4",
+          url: "https://www.youtube.com/watch?v=STREWYp2WxU",
         })
         .then(({ data }) => {
           this.loading = false;
 
-          this.nowPlaying = {
-            timestamp: Number(data?.song?.videoDetails?.lengthSeconds),
-            actualTime: 0,
-            song: {
-              name:
-                data?.song?.videoDetails?.media?.song ||
-                data?.song?.videoDetails?.title,
-              artists: this.getArtists(data?.song),
-              cover_src: data?.song?.videoDetails?.thumbnails.reverse()[0].url,
-              src: data.path,
-            },
+          this.nowPlaying.song = {
+            name: data.normalizedName,
+            artists: this.getArtists(data),
+            cover_src: data?.thumbnails.reverse()[0].url,
+            src: data.path,
           };
+
+          this.nowPlaying.timestamp = Number(data?.lengthSeconds);
+          this.nowPlaying.actualTime = 0;
 
           this.changeStatus();
         })
@@ -205,15 +204,10 @@ export default {
     },
 
     getArtists(songData) {
-      if (songData?.videoDetails?.media?.artist) {
-        const ytMedia = songData?.videoDetails?.media?.artist
-          .split(",")
-          .map((artist) => String(artist).trim());
+      if (songData?.media?.artist)
+        return String(songData?.media?.artist).trim();
 
-        return ytMedia;
-      }
-
-      return [];
+      return String(songData?.author?.name || songData?.author?.user).trim();
     },
 
     secondsToHours(timestamp = 0) {
@@ -222,6 +216,12 @@ export default {
 
     // Methods for player
     changeSongVolume() {
+      if (this.nowPlaying.volume <= 0) {
+        this.muted = true;
+      } else {
+        this.muted = false;
+      }
+
       this.$nextTick(() => {
         this.$refs.audioPlayer.volume = this.nowPlaying.volume / 100;
       });

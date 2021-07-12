@@ -6,6 +6,10 @@
 
       <v-spacer></v-spacer>
 
+      <v-btn icon link to="/search">
+        <v-icon>mdi-magnify</v-icon>
+      </v-btn>
+
       <v-btn icon @click="$vuetify.theme.dark = !$vuetify.theme.dark">
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
