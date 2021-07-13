@@ -16,7 +16,7 @@ const routes = [
   },
   {
     path: "/search",
-    name: "Find songs",
+    name: "Song results",
     component: Search,
   },
   ...SettingsRoutes,

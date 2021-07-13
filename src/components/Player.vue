@@ -32,13 +32,14 @@
             <v-list-item>
               <v-list-item-avatar rounded="0" width="auto" height="90px">
                 <div
+                  v-if="nowPlaying.song.cover_src"
                   :style="`border-radius: 5px; ${
                     !$vuetify.theme.dark
                       ? 'border: 1px solid #212121'
                       : 'border: 1px solid whistesmoke'
                   }; background-image: url('${
                     nowPlaying.song.cover_src
-                  }'); background-position: center; background-repeat: no-repat; background-size: cover; width: 138px; height: 90px`"
+                  }'); background-position: center; background-repeat: no-repat; background-size: cover; width: 158px; height: 90px`"
                 ></div>
               </v-list-item-avatar>
               <v-list-item-content>
@@ -66,7 +67,11 @@
                   </v-col>
                   <v-col class="d-flex" cols="2">
                     <v-list-item-icon class="ma-auto">
-                      <v-btn icon @click="playSong">
+                      <v-btn
+                        icon
+                        @click="playSong"
+                        :disabled="!nowPlaying.song.cover_src"
+                      >
                         <v-icon>
                           {{ playing ? "mdi-pause" : "mdi-play" }}
                         </v-icon>
@@ -115,6 +120,7 @@ import axios from "axios";
 import { DateTime } from "luxon";
 
 export default {
+  name: "Player",
   data() {
     return {
       // Flags
@@ -122,6 +128,9 @@ export default {
       loading: false,
       clicked: false,
       muted: false,
+
+      // URL
+      url: "",
 
       nowPlaying: {
         volume: 100,
@@ -140,6 +149,22 @@ export default {
   created() {
     this.$nextTick(() => {
       this.$refs.audioPlayer.addEventListener("timeupdate", this.updateTime);
+    });
+
+    this.$store.subscribe((mutation) => {
+      if (mutation.type === "requestPlay") {
+        this.playing = false;
+
+        if (this.nowPlaying.actualTime !== 0) {
+          this.nowPlaying.actualTime -= 1;
+        }
+
+        this.nowPlaying.song.src = "";
+        this.url = mutation.payload.url;
+        setTimeout(() => {
+          this.playSong();
+        }, 500);
+      }
     });
   },
 
@@ -180,7 +205,7 @@ export default {
 
       axios
         .post("http://localhost:9090/get-song", {
-          url: "https://www.youtube.com/watch?v=STREWYp2WxU",
+          url: this.url,
         })
         .then(({ data }) => {
           this.loading = false;

@@ -4,11 +4,17 @@
       <v-app-bar-nav-icon @click="drawer = true"> </v-app-bar-nav-icon>
       <v-toolbar-title> {{ $route.name }} </v-toolbar-title>
 
-      <v-spacer></v-spacer>
-
-      <v-btn icon link to="/search">
-        <v-icon>mdi-magnify</v-icon>
-      </v-btn>
+      <v-row class="ml-5 mr-5" style="margin-top: 15px">
+        <v-col>
+          <v-text-field
+            v-model="query"
+            label="Find songs"
+            outlined
+            dense
+            @keypress.native.enter="findSongs"
+          ></v-text-field>
+        </v-col>
+      </v-row>
 
       <v-btn icon @click="$vuetify.theme.dark = !$vuetify.theme.dark">
         <v-icon>mdi-dots-vertical</v-icon>
@@ -51,9 +57,7 @@
     </v-navigation-drawer>
 
     <v-main app>
-      <v-container app fluid>
-        <router-view />
-      </v-container>
+      <router-view app />
     </v-main>
 
     <player
@@ -72,10 +76,17 @@ export default {
 
   data: () => ({
     drawer: false,
+    query: "",
   }),
 
   created() {
     this.$vuetify.theme.dark = true;
+  },
+
+  methods: {
+    findSongs() {
+      return this.$router.push(`/search?q=${this.query}`);
+    },
   },
 };
 </script>
